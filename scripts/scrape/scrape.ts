@@ -55,7 +55,7 @@ const scrapeRequiredAttributes: ScrapeFunction<Record<string, string>> = $ => {
 
 const scrapeWeight: ScrapeFunction = $ => {
   return normalizeText($('#infobox tbody tr:nth-child(7) td:first').text())
-      .replace('Wgt. ', '')
+    .replace('Wgt. ', '')
   ;
 };
 
@@ -69,34 +69,71 @@ const scrapeCritical: ScrapeFunction = $ => {
   return match ? match.groups.critValue : '';
 };
 
-const mapInfusionTableData = (data: any) => {
+const mapInfusionTableData = (data: Array<Array<string>>) => {
+  console.log(data);
+  const columnIndices = {
+    guardBoost: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Bst'),
+    castingScaling: data.findIndex(([section, key]) => section.includes('Attack Power') && (key.includes('Sor Scaling') || key.includes('Inc Scaling'))),
+    scaling: {
+      strength: data.findIndex(([section, key]) => section === 'Stat Scaling' && key === 'Str'),
+      dexterity: data.findIndex(([section, key]) => section === 'Stat Scaling' && key === 'Dex'),
+      intelligence: data.findIndex(([section, key]) => section === 'Stat Scaling' && key === 'Int'),
+      faith: data.findIndex(([section, key]) => section === 'Stat Scaling' && key === 'Fai'),
+      arcane: data.findIndex(([section, key]) => section === 'Stat Scaling' && key === 'Arc'),
+    },
+    attack: {
+      physical: data.findIndex(([section, key]) => section.includes('Attack Power') && key === 'Phy'),
+      magic: data.findIndex(([section, key]) => section.includes('Attack Power') && key === 'Mag'),
+      fire: data.findIndex(([section, key]) => section.includes('Attack Power') && key === 'Fir'),
+      lightning: data.findIndex(([section, key]) => section.includes('Attack Power') && key === 'Lit'),
+      holy: data.findIndex(([section, key]) => section.includes('Attack Power') && key === 'Hol'),
+    },
+    guard: {
+      physical: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Phy'),
+      magic: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Mag'),
+      fire: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Fir'),
+      lightning: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Lit'),
+      holy: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Hol'),
+    },
+  };
+
   return data[0].slice(2).reduce((acc: any, _: any, i: number) => {
+    const rowIndex = i + 2;
     return {
       ...acc,
       [i]: {
-        guardBoost: data[18][i + 2],
+        castingScaling: columnIndices.castingScaling === -1 ? null : data[columnIndices.castingScaling][rowIndex].split(' - '),
+        guardBoost: data[columnIndices.guardBoost][rowIndex],
         scaling: {
-          strength: data[7][i + 2],
-          dexterity: data[8][i + 2],
-          intelligence: data[9][i + 2],
-          faith: data[10][i + 2],
-          arcane: data[11][i + 2],
+          strength: data[columnIndices.scaling.strength][rowIndex],
+          dexterity: data[columnIndices.scaling.dexterity][rowIndex],
+          intelligence: data[columnIndices.scaling.intelligence][rowIndex],
+          faith: data[columnIndices.scaling.faith][rowIndex],
+          arcane: data[columnIndices.scaling.arcane][rowIndex],
         },
         attack: {
-          physical: data[1][i + 2],
-          magic: data[2][i + 2],
-          fire: data[3][i + 2],
-          lightning: data[4][i + 2],
-          holy: data[5][i + 2],
+          physical: data[columnIndices.attack.physical][rowIndex],
+          magic: data[columnIndices.attack.magic][rowIndex],
+          fire: data[columnIndices.attack.fire][rowIndex],
+          lightning: data[columnIndices.attack.lightning][rowIndex],
+          holy: data[columnIndices.attack.holy][rowIndex],
         },
         guard: {
-          physical: data[13][i + 2],
-          magic: data[14][i + 2],
-          fire: data[15][i + 2],
-          lightning: data[16][i + 2],
-          holy: data[17][i + 2],
+          physical: data[columnIndices.guard.physical][rowIndex],
+          magic: data[columnIndices.guard.magic][rowIndex],
+          fire: data[columnIndices.guard.fire][rowIndex],
+          lightning: data[columnIndices.guard.lightning][rowIndex],
+          holy: data[columnIndices.guard.holy][rowIndex],
         },
-        effects: {},
+        effects: {
+          bleed: '',
+          frost: '',
+          poison: '',
+          rot: '',
+          sleep: '',
+          madness: '',
+          death: '',
+        },
       },
     };
   }, {});
@@ -165,7 +202,9 @@ const run = async () => {
   $index('.wiki_table tbody tr').each((_, tr) => {
     $(tr)('td:first a').each((_, a) => {
       const url = `${ROOT_URL}${a.attribs['href']}`;
-      promises.push(scrapeWeaponData(url));
+      if (url.includes('Academy+Glintstone+Staff')) {
+        promises.push(scrapeWeaponData(url));
+      };
     });
   });
   try {

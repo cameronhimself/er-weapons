@@ -15,7 +15,6 @@ export type WeaponCategoryKey =
   // | 'flail'
   // | 'greatHammer'
   // | 'colossalWeapon'
-  // | 'colossalWeapon'
   // | 'spear'
   // | 'greatSpear'
   // | 'halberd'
@@ -131,7 +130,7 @@ export type Weapon = {
   infusable: boolean;
   critical: number;
   requiredAttributes: Record<AttributeKey, number>;
-  specialDamage: Record<SpecialDamageTypeKey, number>;
+  // specialDamage: Record<SpecialDamageTypeKey, number>;
   stats: Partial<Record<InfusionKey, Partial<Record<UpgradeLevel, WeaponStats>>>>;
 };
 
