@@ -5,7 +5,7 @@ import * as cheerio from 'cheerio';
 import { load as $ } from 'cheerio';
 // @ts-ignore
 import cheerioTableparser from 'cheerio-tableparser';
-import { CACHE_DIR, SCRAPED_FILEPATH, IMAGE_CACHE_DIR } from './constants';
+import { CACHE_DIR, SCRAPED_FILEPATH } from './constants';
 import { ScrapedWeapon } from './types';
 
 const ROOT_URL = 'https://eldenring.wiki.fextralife.com';
@@ -70,7 +70,6 @@ const scrapeCritical: ScrapeFunction = $ => {
 };
 
 const mapInfusionTableData = (data: Array<Array<string>>) => {
-  console.log(data);
   const columnIndices = {
     guardBoost: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Bst'),
     castingScaling: data.findIndex(([section, key]) => section.includes('Attack Power') && (key.includes('Sor Scaling') || key.includes('Inc Scaling'))),
@@ -97,46 +96,43 @@ const mapInfusionTableData = (data: Array<Array<string>>) => {
     },
   };
 
-  return data[0].slice(2).reduce((acc: any, _: any, i: number) => {
+  return data[0].slice(2).map((_, i) => {
     const rowIndex = i + 2;
     return {
-      ...acc,
-      [i]: {
-        castingScaling: columnIndices.castingScaling === -1 ? null : data[columnIndices.castingScaling][rowIndex].split(' - '),
-        guardBoost: data[columnIndices.guardBoost][rowIndex],
-        scaling: {
-          strength: data[columnIndices.scaling.strength][rowIndex],
-          dexterity: data[columnIndices.scaling.dexterity][rowIndex],
-          intelligence: data[columnIndices.scaling.intelligence][rowIndex],
-          faith: data[columnIndices.scaling.faith][rowIndex],
-          arcane: data[columnIndices.scaling.arcane][rowIndex],
-        },
-        attack: {
-          physical: data[columnIndices.attack.physical][rowIndex],
-          magic: data[columnIndices.attack.magic][rowIndex],
-          fire: data[columnIndices.attack.fire][rowIndex],
-          lightning: data[columnIndices.attack.lightning][rowIndex],
-          holy: data[columnIndices.attack.holy][rowIndex],
-        },
-        guard: {
-          physical: data[columnIndices.guard.physical][rowIndex],
-          magic: data[columnIndices.guard.magic][rowIndex],
-          fire: data[columnIndices.guard.fire][rowIndex],
-          lightning: data[columnIndices.guard.lightning][rowIndex],
-          holy: data[columnIndices.guard.holy][rowIndex],
-        },
-        effects: {
-          bleed: '',
-          frost: '',
-          poison: '',
-          rot: '',
-          sleep: '',
-          madness: '',
-          death: '',
-        },
+      castingScaling: columnIndices.castingScaling === -1 ? null : data[columnIndices.castingScaling][rowIndex].split(' - '),
+      guardBoost: data[columnIndices.guardBoost][rowIndex],
+      scaling: {
+        strength: data[columnIndices.scaling.strength][rowIndex],
+        dexterity: data[columnIndices.scaling.dexterity][rowIndex],
+        intelligence: data[columnIndices.scaling.intelligence][rowIndex],
+        faith: data[columnIndices.scaling.faith][rowIndex],
+        arcane: data[columnIndices.scaling.arcane][rowIndex],
+      },
+      attack: {
+        physical: data[columnIndices.attack.physical][rowIndex],
+        magic: data[columnIndices.attack.magic][rowIndex],
+        fire: data[columnIndices.attack.fire][rowIndex],
+        lightning: data[columnIndices.attack.lightning][rowIndex],
+        holy: data[columnIndices.attack.holy][rowIndex],
+      },
+      guard: {
+        physical: data[columnIndices.guard.physical][rowIndex],
+        magic: data[columnIndices.guard.magic][rowIndex],
+        fire: data[columnIndices.guard.fire][rowIndex],
+        lightning: data[columnIndices.guard.lightning][rowIndex],
+        holy: data[columnIndices.guard.holy][rowIndex],
+      },
+      effects: {
+        bleed: '',
+        frost: '',
+        poison: '',
+        rot: '',
+        sleep: '',
+        madness: '',
+        death: '',
       },
     };
-  }, {});
+  });
 };
 
 const getTableDataByInfusion = ($: cheerio.CheerioAPI, infusion: string) => {
@@ -199,12 +195,19 @@ const run = async () => {
   const indexPageHtml = await loadPageHtml(INDEX_URL);
   const $index = $(indexPageHtml);
   const promises: Array<Promise<ScrapedWeapon>> = [];
+  const whitelist: Array<string> = [];
+  const limit = 0;
   $index('.wiki_table tbody tr').each((_, tr) => {
     $(tr)('td:first a').each((_, a) => {
+      const name = normalizeText($(a).text());
       const url = `${ROOT_URL}${a.attribs['href']}`;
-      if (url.includes('Academy+Glintstone+Staff')) {
-        promises.push(scrapeWeaponData(url));
-      };
+      if (limit && promises.length >= limit) {
+        return;
+      }
+      if (whitelist.length && !whitelist.includes(name)) {
+        return;
+      }
+      promises.push(scrapeWeaponData(url));
     });
   });
   try {

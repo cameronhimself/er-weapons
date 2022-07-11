@@ -1,5 +1,6 @@
-type ScrapedWeaponStats = {
+export type ScrapedWeaponStats = {
   guardBoost: string;
+  castingScaling: [string, string];
   scaling: {
     strength: string;
     dexterity: string;
@@ -33,18 +34,18 @@ export type ScrapedWeapon = {
   weight: string;
   critical: string;
   stats: {
-    standard: Record<number, ScrapedWeaponStats>;
-    heavy: Record<number, ScrapedWeaponStats>;
-    keen: Record<number, ScrapedWeaponStats>;
-    quality: Record<number, ScrapedWeaponStats>;
-    fire: Record<number, ScrapedWeaponStats>;
-    flame: Record<number, ScrapedWeaponStats>;
-    lightning: Record<number, ScrapedWeaponStats>;
-    sacred: Record<number, ScrapedWeaponStats>;
-    magic: Record<number, ScrapedWeaponStats>;
-    cold: Record<number, ScrapedWeaponStats>;
-    poison: Record<number, ScrapedWeaponStats>;
-    blood: Record<number, ScrapedWeaponStats>;
-    occult: Record<number, ScrapedWeaponStats>;
+    standard: Array<ScrapedWeaponStats>;
+    heavy: Array<ScrapedWeaponStats>;
+    keen: Array<ScrapedWeaponStats>;
+    quality: Array<ScrapedWeaponStats>;
+    fire: Array<ScrapedWeaponStats>;
+    flame: Array<ScrapedWeaponStats>;
+    lightning: Array<ScrapedWeaponStats>;
+    sacred: Array<ScrapedWeaponStats>;
+    magic: Array<ScrapedWeaponStats>;
+    cold: Array<ScrapedWeaponStats>;
+    poison: Array<ScrapedWeaponStats>;
+    blood: Array<ScrapedWeaponStats>;
+    occult: Array<ScrapedWeaponStats>;
   }
 };

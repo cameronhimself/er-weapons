@@ -8,34 +8,44 @@ export type WeaponCategoryKey =
   | 'curvedSword'
   | 'curvedGreatsword'
   | 'katana'
-  // | 'twinblade'
-  // | 'axe'
-  // | 'greataxe'
-  // | 'hammer'
-  // | 'flail'
-  // | 'greatHammer'
-  // | 'colossalWeapon'
-  // | 'spear'
-  // | 'greatSpear'
-  // | 'halberd'
-  // | 'reaper'
-  // | 'whip'
-  // | 'fist'
-  // | 'claw'
-  // | 'lightBow'
-  // | 'bow'
-  // | 'greatbow'
-  // | 'crossbow'
-  // | 'ballista'
-  // | 'glintstoneStaff'
-  // | 'sacredSeal'
-  // | 'torch'
+  | 'twinblade'
+  | 'axe'
+  | 'greataxe'
+  | 'hammer'
+  | 'flail'
+  | 'greatHammer'
+  | 'colossalWeapon'
+  | 'spear'
+  | 'greatSpear'
+  | 'halberd'
+  | 'reaper'
+  | 'whip'
+  | 'fist'
+  | 'claw'
+  | 'lightBow'
+  | 'bow'
+  | 'greatbow'
+  | 'crossbow'
+  | 'ballista'
+  | 'glintstoneStaff'
+  | 'sacredSeal'
+  | 'torch'
 ;
 
 export type InfusionKey =
   | 'standard'
   | 'heavy'
+  | 'keen'
+  | 'quality'
+  | 'fire'
+  | 'flame'
+  | 'lightning'
+  | 'sacred'
+  | 'magic'
+  | 'cold'
+  | 'poison'
   | 'blood'
+  | 'occult'
 ;
 
 export type WeaponArtKey =
@@ -114,6 +124,7 @@ export type Infusion = {
 
 export type WeaponStats = {
   guardBoost: number;
+  castingScaling: [number, number];
   scaling: Record<AttributeKey, number>;
   attack: Record<AttackTypeKey, number>;
   guard: Record<AttackTypeKey, number>;
@@ -131,14 +142,5 @@ export type Weapon = {
   critical: number;
   requiredAttributes: Record<AttributeKey, number>;
   // specialDamage: Record<SpecialDamageTypeKey, number>;
-  stats: Partial<Record<InfusionKey, Partial<Record<UpgradeLevel, WeaponStats>>>>;
+  stats: Partial<Record<InfusionKey, Array<WeaponStats>>>;
 };
-
-const scalingMap = {
-  100: 'E',
-  200: 'D',
-  300: 'C',
-  400: 'B',
-  500: 'A',
-  600: 'S',
-}
