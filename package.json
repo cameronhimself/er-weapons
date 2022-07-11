@@ -20,7 +20,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "scrape": "ts-node --project ./tsconfig.node.json scripts/scrape/scrape.ts"
   },
   "eslintConfig": {
     "extends": [
@@ -39,5 +40,14 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.2",
+    "@types/write": "^2.0.1",
+    "cheerio": "^1.0.0-rc.12",
+    "cheerio-tableparser": "^1.0.1",
+    "node-fetch": "^2.6.7",
+    "ts-node": "^10.8.2",
+    "write": "^2.0.0"
   }
 }
