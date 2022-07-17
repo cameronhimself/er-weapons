@@ -28,12 +28,13 @@ export type ScrapedWeaponStats = {
 export type ScrapedWeapon = {
   name: string;
   category: string;
+  wikiUrl: string;
   physicalDamageTypes: Array<string>;
   requiredAttributes: Record<string, string>;
   weaponArt: string;
   weight: string;
   critical: string;
-  stats: {
+  infusions: {
     standard: Array<ScrapedWeaponStats>;
     heavy: Array<ScrapedWeaponStats>;
     keen: Array<ScrapedWeaponStats>;

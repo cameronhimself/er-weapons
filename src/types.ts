@@ -101,6 +101,12 @@ export type UpgradeLevelSomber = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 export type WeaponScaling = 'S' | 'A' | 'B' | 'C' | 'D' | 'E';
 
+export type AttackType = {
+  key: AttackTypeKey;
+  name: string;
+  shortName: string;
+};
+
 export type Attribute = {
   key: AttributeKey;
   name: string;
@@ -120,9 +126,10 @@ export type WeaponArt = {
 export type Infusion = {
   key: InfusionKey;
   name: string;
+  shortName: string;
 }
 
-export type WeaponStats = {
+export type WeaponInfusionStats = {
   guardBoost: number;
   castingScaling: [number, number];
   scaling: Record<AttributeKey, number>;
@@ -131,9 +138,10 @@ export type WeaponStats = {
   effects: Record<EffectKey, number>;
 }
 
-export type Weapon = {
+export type WeaponBaseStats = {
   name: string;
   category: WeaponCategoryKey;
+  wikiUrl: string;
   upgradeType: 'standard' | 'somber';
   physicalDamageTypes: Array<PhysicalDamageTypeKey>;
   weaponArt: WeaponArtKey;
@@ -141,6 +149,14 @@ export type Weapon = {
   infusable: boolean;
   critical: number;
   requiredAttributes: Record<AttributeKey, number>;
+}
+
+export type Weapon = WeaponBaseStats & {
   // specialDamage: Record<SpecialDamageTypeKey, number>;
-  stats: Partial<Record<InfusionKey, Array<WeaponStats>>>;
+  infusions: Partial<Record<InfusionKey, Array<WeaponInfusionStats>>>;
+};
+
+export type InfusedWeapon = WeaponBaseStats & WeaponInfusionStats & {
+  infusion: InfusionKey;
+  level: UpgradeLevel;
 };

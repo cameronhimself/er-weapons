@@ -1,18 +1,49 @@
 import {
+  AttackType,
+  AttackTypeKey,
   Attribute,
   AttributeKey,
   Infusion,
   InfusionKey,
+  InfusedWeapon,
+  UpgradeLevel,
   Weapon,
   WeaponArt,
   WeaponArtKey,
   WeaponCategory,
   WeaponCategoryKey,
 } from '../types';
-// import weaponsRaw from './weapons.json';
+import weaponsRaw from './weapons.json';
 
-export const weapons = [] as Array<Weapon>;
-// export const weapons = weaponsRaw as Array<Weapon>;
+export const weapons = weaponsRaw as Array<Weapon>;
+
+export const infusedWeapons: Array<InfusedWeapon> = weapons.reduce((acc, weapon) => {
+  const { infusions, ...baseStats } = weapon;
+
+  Object.entries(infusions).forEach(([k, infusion]) => {
+    const infusionKey = k as InfusionKey;
+    // const infusionMinLevel = 0;
+    // const infusionMinStats = infusion[infusionMinLevel];
+    const infusionMaxLevel = infusion.length - 1;
+    const infusionMaxStats = infusion[infusionMaxLevel];
+
+    // acc.push({
+    //   ...baseStats,
+    //   ...infusionMinStats,
+    //   infusion: infusionKey,
+    //   level: infusionMinLevel as UpgradeLevel,
+    // });
+
+    acc.push({
+      ...baseStats,
+      ...infusionMaxStats,
+      infusion: infusionKey,
+      level: infusionMaxLevel as UpgradeLevel,
+    });
+  });
+
+  return acc;
+}, [] as Array<InfusedWeapon>);
 
 const makeDataList = <TValues, TKey extends string>(lookup: Record<TKey, TValues>) => {
   return Object.entries(lookup).map(([key, data]) => ({
@@ -20,6 +51,14 @@ const makeDataList = <TValues, TKey extends string>(lookup: Record<TKey, TValues
     ...data as TValues,
   }));
 }
+
+export const attackTypeLookup: Record<AttackTypeKey, Omit<AttackType, 'key'>> = {
+  physical: { name: 'Physical', shortName: 'Phy' },
+  magic: { name: 'Magic', shortName: 'Mag' },
+  fire: { name: 'Fire', shortName: 'Fire' },
+  lightning: { name: 'Lightning', shortName: 'Lit' },
+  holy: { name: 'Holy', shortName: 'Holy' },
+};
 
 export const weaponCategoryLookup: Record<WeaponCategoryKey, Omit<WeaponCategory, 'key'>> = {
   dagger: { name: 'Dagger' },
@@ -60,19 +99,19 @@ export const weaponArtLookup: Record<WeaponArtKey, Omit<WeaponArt, 'key'>> = {
 };
 
 export const infusionLookup: Record<InfusionKey, Omit<Infusion, 'key'>> = {
-  standard: { name: 'Standard' },
-  heavy: { name: 'Heavy' },
-  keen: { name: 'Keen' },
-  quality: { name: 'Quality' },
-  fire: { name: 'Fire' },
-  flame: { name: 'Flame' },
-  lightning: { name: 'Lightning' },
-  sacred: { name: 'Sacred' },
-  magic: { name: 'Magic' },
-  cold: { name: 'Cold' },
-  poison: { name: 'Poison' },
-  blood: { name: 'Blood' },
-  occult: { name: 'Occult' },
+  standard: { name: 'Standard', shortName: 'Std' },
+  heavy: { name: 'Heavy', shortName: 'Hvy' },
+  keen: { name: 'Keen', shortName: 'Keen' },
+  quality: { name: 'Quality', shortName: 'Qua' },
+  fire: { name: 'Fire', shortName: 'Fire' },
+  flame: { name: 'Flame', shortName: 'Flame' },
+  lightning: { name: 'Lightning', shortName: 'Lit' },
+  sacred: { name: 'Sacred', shortName: 'Sac' },
+  magic: { name: 'Magic', shortName: 'Mag' },
+  cold: { name: 'Cold', shortName: 'Cold' },
+  poison: { name: 'Poison', shortName: 'Poi' },
+  blood: { name: 'Blood', shortName: 'Blood' },
+  occult: { name: 'Occult', shortName: 'Occ' },
 };
 
 export const attributeLookup: Record<AttributeKey, Omit<Attribute, 'key'>> = {
@@ -98,6 +137,7 @@ export const attributeLookup: Record<AttributeKey, Omit<Attribute, 'key'>> = {
   },
 };
 
+export const attackTypes: Array<AttackType> = makeDataList(attackTypeLookup);
 export const attributes: Array<Attribute> = makeDataList(attributeLookup);
 export const infusions: Array<Infusion> = makeDataList(infusionLookup);
 export const weaponCategories: Array<WeaponCategory> = makeDataList(weaponCategoryLookup);

@@ -11,7 +11,7 @@ import { ScrapedWeapon } from './types';
 const ROOT_URL = 'https://eldenring.wiki.fextralife.com';
 const INDEX_URL = `${ROOT_URL}/Weapons+Comparison+Tables`;
 
-type ScrapeFunction<TReturn = string> = ($: cheerio.CheerioAPI) => TReturn;
+type ScrapeFunction<TReturn = string> = ($: cheerio.CheerioAPI, weaponName?: string) => TReturn;
 
 const normalizeText = (s: string): string => {
   return s.trim().replace(/\u00A0/gm, ' ');
@@ -37,11 +37,16 @@ const scrapeName: ScrapeFunction = $ => {
 };
 
 const scrapeCategory: ScrapeFunction = $ => {
-  return normalizeText($('#infobox tbody tr:nth-child(5) td:first').text());
+  return normalizeText($('#breadcrumbs-container > a:last').text());
 };
 
 const scrapePhysicalDamageTypes: ScrapeFunction<Array<string>> = $ => {
-  return normalizeText($('#infobox tbody tr:nth-child(5) td:last').text()).split(' / ');
+  return normalizeText($('#infobox tbody tr:nth-child(5) td:last').text())
+    .split('/')
+    .map(s => s.trim())
+    .filter(s => s.toLowerCase() !== 'none')
+    .filter(Boolean)
+  ;
 };
 
 const scrapeRequiredAttributes: ScrapeFunction<Record<string, string>> = $ => {
@@ -136,10 +141,31 @@ const mapInfusionTableData = (data: Array<Array<string>>) => {
 };
 
 const getTableDataByInfusion = ($: cheerio.CheerioAPI, infusion: string) => {
-  const th = $(`th:contains('${infusion} +1'):first`);
-  if (th.length) {
-    const attackTable = th.parentsUntil('table').last().parent().parent();
-    const $attackTable = cheerio.load(attackTable.html());
+  const tableHtmlAttempts: Array<() => string | void> = [
+    () => {
+      let th = $(`th:contains(${infusion}+1)`);
+      if (!th.length) {
+        th = $(`th:contains(${infusion} +1)`);
+      };
+      if (th.length) {
+        return th.parentsUntil('.table-responsive').last().parent().html();
+      }
+    },
+    () => {
+      let heading = $(`h3:contains( ${infusion} Upgrades)`);
+      if (!heading.length) {
+        heading = $(`h3:contains( ${infusion.toLowerCase()} Upgrades)`)
+      }
+      if (heading.length) {
+        return heading.nextUntil('.table-responsive').last().next().html();
+      }
+    },
+  ];
+
+  let tableHtml: string | void;
+  tableHtmlAttempts.find(fn => tableHtml = fn());
+  if (tableHtml) {
+    const $attackTable = cheerio.load(tableHtml);
     cheerioTableparser($attackTable);
     // @ts-ignore
     const data = $attackTable('table').parsetable(true, true, true);
@@ -148,7 +174,7 @@ const getTableDataByInfusion = ($: cheerio.CheerioAPI, infusion: string) => {
   return null;
 };
 
-const scrapeStats: ScrapeFunction<any> = $ => {
+const scrapeInfusions: ScrapeFunction<ScrapedWeapon['infusions']> = $ => {
   const tableDataList = {
     standard: getTableDataByInfusion($, 'Standard'),
     heavy: getTableDataByInfusion($, 'Heavy'),
@@ -170,24 +196,26 @@ const scrapeStats: ScrapeFunction<any> = $ => {
   }, {});
 };
 
-const scrapeWeaponData = async (url: string): Promise<any> => {
+const scrapeWeaponData = async (url: string): Promise<ScrapedWeapon> => {
   const html = await loadPageHtml(url);
   const $root = cheerio.load(html);
   const name = scrapeName($root);
+  console.log(`Scraping ${name}...`);
   try {
     return {
       name: scrapeName($root),
+      wikiUrl: url,
       category: scrapeCategory($root),
       physicalDamageTypes: scrapePhysicalDamageTypes($root),
       requiredAttributes: scrapeRequiredAttributes($root),
       weaponArt: scrapeWeaponArt($root),
       weight: scrapeWeight($root),
       critical: scrapeCritical($root),
-      stats: scrapeStats($root),
+      infusions: scrapeInfusions($root),
     };
   } catch (e) {
     console.error(`Error scraping ${name}`);
-    throw e;
+    console.error(e);
   }
 };
 
