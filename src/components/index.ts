@@ -1,7 +1,3 @@
-import styled from 'styled-components';
-
-export * from './Mono';
-
-export const A = styled.a`
-  color: inherit;
-`;
+export * from './WeaponTable';
+export * as icons from './icons';
+export * from './components';

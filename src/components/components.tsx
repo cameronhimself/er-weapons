@@ -4,3 +4,7 @@ import { fonts } from '../style';
 export const Mono = styled.span`
   font-family: ${fonts.mono};
 `;
+
+export const A = styled.a`
+  color: inherit;
+`;
