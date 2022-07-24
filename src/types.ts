@@ -1,4 +1,4 @@
-export type WeaponCategoryKey =
+export type WeaponTypeKey =
   | 'dagger'
   | 'straightSword'
   | 'greatsword'
@@ -114,7 +114,7 @@ export type Attribute = {
 }
 
 export type WeaponCategory = {
-  key: WeaponCategoryKey;
+  key: WeaponTypeKey;
   name: string;
 }
 
@@ -140,7 +140,7 @@ export type WeaponInfusionStats = {
 
 export type WeaponBaseStats = {
   name: string;
-  category: WeaponCategoryKey;
+  weaponType: WeaponTypeKey;
   wikiUrl: string;
   upgradeType: 'standard' | 'somber';
   physicalDamageTypes: Array<PhysicalDamageTypeKey>;

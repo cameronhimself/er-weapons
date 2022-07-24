@@ -11,42 +11,147 @@ import {
   ColumnFiltersState,
   GroupingState,
   SortDirection,
+  SortingState,
   Table,
+  Row as RowType,
 } from '@tanstack/react-table';
 import { icons as i } from '../../components';
 import {
   infusions,
   infusedWeapons,
-  weaponCategoryLookup,
-  weaponCategories,
+  weaponTypeLookup,
+  weaponTypes,
 } from '../../data';
-import { InfusionKey, InfusedWeapon, WeaponCategoryKey } from '../../types';
+import { fonts } from '../../style';
+import { InfusionKey, InfusedWeapon, WeaponTypeKey } from '../../types';
+import { infusionIcons, weaponTypeIcons } from '../../images';
 import { columns as defaultColumns } from './columns';
 
-export type WeaponTypeFilters = Record<WeaponCategoryKey, boolean>;
+export type WeaponTypeFilters = Record<WeaponTypeKey, boolean>;
 export type InfusionFilters = Record<InfusionKey, boolean>;
+
+const TableHeader = styled.thead`
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  :before {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 10px;
+    height: 100%;
+    margin; auto;
+    background: linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 20%);
+    top: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+  }
+  :after {
+    content: '';
+    height: 8px;
+    display: block;
+  }
+`;
 
 const StyledWeaponTable = styled.table`
   border-spacing: 0;
   width: 100%;
+  border-collapse: collapse;
 `;
 
-const Row = styled.tr<{ index: number }>`
-  background-color: ${({ index }) => index % 2 ? '#eee' : '#fff'};
+const BasicRow = styled.tr<{ index: number }>`
+  border-bottom: 1px solid #ccc;
+  background: ${({ index }) => index % 2 ? '#fff' : '#f9f9f9'};
 `;
+
+const GroupHeaderRow = styled.tr`
+  font-size: 16px;
+  color: #fff;
+  > td {
+    padding: 6px;
+    background: none;
+    :last-child {
+      padding: 0;
+    }
+  }
+`;
+
+const TypeHeaderRow = styled(GroupHeaderRow)<{ weaponType: WeaponTypeKey }>`
+  font-weight: bold;
+  :first-child {
+    td {
+      border-top: none;
+    }
+  }
+  > td {
+    border-top: 20px solid #fff;
+    border-bottom: 5px solid #fff;
+    padding: 8px 0;
+    background: #D16666;
+    color: #fff;
+  }
+`;
+
+const InfusionHeaderRow = styled(GroupHeaderRow)<{ infusion: InfusionKey }>`
+  background: white;
+  font-size: 14px;
+  color: #000;
+  border-bottom: 2px solid #000;
+  font-weight: normal;
+  > td {
+    padding-top: 10px;
+    :first-child {
+      ::before {
+        content: '';
+        background-image: url(${({ infusion }) => infusionIcons[infusion]});
+        width: 16px;
+        height: 16px;
+        background-size: contain;
+        margin-right: 5px;
+        display: inline-block;
+        vertical-align: middle;
+        margin-bottom: 3px;
+      }
+    }
+  }
+`;
+
+type RowProps = {
+  index: number;
+  children: React.ReactNode;
+  row: RowType<InfusedWeapon>;
+};
+
+const Row: React.FC<RowProps> = (props) => {
+  const { row, ...rowProps } = props;
+  const RowComponent = row.getIsGrouped()
+    ? GroupHeaderRow
+    : BasicRow;
+  if (row.groupingColumnId === 'infusion') {
+    return <InfusionHeaderRow {...rowProps} infusion={row.original.infusion} />;
+  }
+  if (row.groupingColumnId === 'type') {
+    return <TypeHeaderRow {...rowProps} weaponType={row.original.weaponType} />;
+  }
+  return <RowComponent {...rowProps} />;
+};
 
 const HeadRow = styled.tr`
-  background: #333;
+  background: #eee;
 `;
 
 const Cell = styled.td`
   padding: 3px 6px;
   white-space: nowrap;
+  background: transparent;
+  border-left: none;
+  border-right: none;
 `;
 
 const HeadCell = styled.th<{ sortable: boolean }>`
   white-space: nowrap;
   padding: 3px 6px;
+  background: #2C4251;
   color: #fff;
   border: none;
   border-right: 1px solid #888;
@@ -68,20 +173,21 @@ const SortIcon: React.FC<{ direction: SortDirection | false }> = (props) => {
 
 export const useWeaponTable = () => {
   const [data] = React.useState(infusedWeapons.sort((a, b) => {
-    const categoryKeys = Object.keys(weaponCategoryLookup) as Array<WeaponCategoryKey>;
-    const indexA = categoryKeys.indexOf(a.category);
-    const indexB = categoryKeys.indexOf(b.category);
+    const weaponTypeKeys = Object.keys(weaponTypeLookup) as Array<WeaponTypeKey>;
+    const indexA = weaponTypeKeys.indexOf(a.weaponType);
+    const indexB = weaponTypeKeys.indexOf(b.weaponType);
     return (indexA < indexB) ? -1 : (indexA > indexB) ? 1 : 0;
   }));
   const [columns] = React.useState<typeof defaultColumns>(defaultColumns);
   const [columnVisibility, setColumnVisibility] = React.useState({})
   const [globalFilter, setGlobalFilter] = React.useState('');
-  const [grouping, setGrouping] = React.useState<GroupingState>(['type']);
+  const [grouping, setGrouping] = React.useState<GroupingState>(['type', 'infusion']);
+  const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([
     {
       id: 'type',
-      value: weaponCategories.reduce(
-        (acc, { key }) => ({ ...acc, [key]: true }),
+      value: weaponTypes.reduce(
+        (acc, { key }) => ({ ...acc, [key]: key === 'dagger' }),
         {} as WeaponTypeFilters
       )
     },
@@ -102,17 +208,19 @@ export const useWeaponTable = () => {
       columnFilters,
       globalFilter,
       grouping,
+      sorting,
       expanded: true,
     },
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onGroupingChange: setGrouping,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     enableGrouping: true,
   });
   return table;
@@ -123,18 +231,13 @@ export const WeaponTable: React.FC<{ table: Table<InfusedWeapon> }> = (props) =>
 
   return (
     <StyledWeaponTable>
-      <thead>
+      <TableHeader>
         {table.getHeaderGroups().map(headerGroup => (
           <HeadRow key={headerGroup.id}>
-            {headerGroup.headers.map(header => (
+            {headerGroup.headers.map(header => !header.column.getIsGrouped() && (
               <HeadCell key={header.id} colSpan={header.colSpan} sortable={!header.isPlaceholder && header.column.getCanSort()}>
-                {header.isPlaceholder ? null : (
-                  <div {...{
-                    className: header.column.getCanSort()
-                      ? 'cursor-pointer select-none'
-                      : '',
-                    onClick: header.column.getToggleSortingHandler(),
-                  }}>
+                {!header.isPlaceholder && (
+                  <div onClick={header.column.getToggleSortingHandler()}>
                     {flexRender(
                       header.column.columnDef.header,
                       header.getContext()
@@ -146,43 +249,17 @@ export const WeaponTable: React.FC<{ table: Table<InfusedWeapon> }> = (props) =>
             ))}
           </HeadRow>
         ))}
-      </thead>
+      </TableHeader>
       <tbody>
         {table.getRowModel().rows.map((row, i) => (
-          <Row key={row.id} index={i}>
-            {row.getVisibleCells().map(cell => (
-              <td
-                {...{
-                  key: cell.id,
-                  style: {
-                    background: cell.getIsGrouped()
-                      ? '#0aff0082'
-                      : cell.getIsAggregated()
-                      ? '#ffa50078'
-                      : cell.getIsPlaceholder()
-                      ? '#ff000042'
-                      : 'white',
-                  },
-                }}
-              >
-                {cell.getIsGrouped() ? (
-                  // If it's a grouped cell, add an expander and row count
-                  <>
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext()
-                    )}{' '}
-                  </>
-                ) : cell.getIsAggregated() ? (
-                  null
-                ) : cell.getIsPlaceholder() ? null : ( // For cells with repeated values, render null
-                  // Otherwise, just render the regular cell
-                  flexRender(
-                    cell.column.columnDef.cell,
-                    cell.getContext()
-                  )
+          <Row key={row.id} index={i} row={row}>
+            {row.getVisibleCells().map(cell => !cell.getIsPlaceholder() && (
+              <Cell key={cell.id} className={cell.id}>
+                {!cell.getIsAggregated() && !cell.getIsPlaceholder() && flexRender(
+                  cell.column.columnDef.cell,
+                  cell.getContext()
                 )}
-              </td>
+              </Cell>
             ))}
           </Row>
         ))}

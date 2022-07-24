@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400&family=Source+Sans+3:wght@300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400&family=Source+Sans+3:wght@300;400;700&Source+Serif+4:wght@300;400;500;600;700&display=swap');
 
 html {
   font-family: sans-serif;
@@ -11,22 +11,4 @@ html {
 body {
   padding: 0;
   margin: 0;
-}
-
-tbody {
-  border-bottom: 1px solid lightgray;
-}
-
-th {
-  border-bottom: 1px solid lightgray;
-  border-right: 1px solid lightgray;
-  padding: 2px 4px;
-}
-
-tfoot {
-  color: gray;
-}
-
-tfoot th {
-  font-weight: normal;
 }

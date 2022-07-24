@@ -2,13 +2,13 @@ import { SCALING_MAP, WIKI_BASE_URL } from './constants';
 import {
   attackTypeLookup,
   infusionLookup,
-  weaponCategoryLookup,
+  weaponTypeLookup,
 } from './data';
 import {
   AttackTypeKey,
   InfusionKey,
   PhysicalDamageTypeKey,
-  WeaponCategoryKey,
+  WeaponTypeKey,
   WeaponScaling,
 } from './types';
 import { invert } from 'lodash';
@@ -37,8 +37,8 @@ export const getAttackTypeShortName = (attackTypeKey: AttackTypeKey): string => 
   return getShortName(attackTypeKey, attackTypeLookup);
 };
 
-export const getCategoryName = (categoryKey: WeaponCategoryKey): string => {
-  return getName(categoryKey, weaponCategoryLookup);
+export const getWeaponTypeName = (weaponTypeKey: WeaponTypeKey): string => {
+  return getName(weaponTypeKey, weaponTypeLookup);
 };
 
 export const getInfusionName = (infusionKey: InfusionKey): string => {

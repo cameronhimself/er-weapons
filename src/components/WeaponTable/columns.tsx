@@ -1,14 +1,58 @@
+import styled from 'styled-components';
 import { ColumnDef } from '@tanstack/react-table';
 import { attackTypes, attributes } from '../../data';
-import { InfusedWeapon } from '../../types';
+import { weaponTypeIcons } from '../../images';
+import { AttackTypeKey, InfusedWeapon, InfusionKey, WeaponTypeKey } from '../../types';
 import {
   getAttackTypeShortName,
-  getCategoryName,
+  getWeaponTypeName,
   getInfusionName,
   getPhysicalDamageTypeName,
   getScalingLetter,
 } from '../../utils';
 import { NumberColumn, WeaponLink } from './components';
+
+const WeaponTypeIcon = styled.span<{ weaponType: WeaponTypeKey }>`
+  position: absolute;
+  content: '';
+  box-sizing: border-box;
+  background-image: url(${({ weaponType }) => weaponTypeIcons[weaponType]});
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 70%;
+  width: 45px;
+  height: 45px;
+  background-color: #fff;
+  border-radius: 9999px;
+  border: 3px solid #D16666;
+  display: inline-block;
+  vertical-align: middle;
+  left: -10px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+`;
+
+const WeaponTypeLabel = styled.span`
+  padding-left: 45px;
+`;
+
+const WeaponTypeContainer = styled.span`
+  position: relative;
+  display: flex;
+  height: 100%;
+  align-items: center;
+`;
+
+const DamageColumn = styled(NumberColumn)<{ attackType: AttackTypeKey, infusion: InfusionKey }>`
+  color: ${({ attackType }) => ({
+    physical: '#000',
+    magic: '#00c',
+    fire: '#c00',
+    lightning: '#ca0',
+    holy: '#885',
+  }[attackType])};
+`;
 
 export const columns: ColumnDef<InfusedWeapon>[] = [
   {
@@ -25,11 +69,16 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
     id: 'type',
     enableSorting: false,
     filterFn: (row, _, filterValue) => {
-      const value = row.original.category;
+      const value = row.original.weaponType;
       return filterValue[value];
     },
-    accessorFn: row => getCategoryName(row.category),
-    cell: info => info.getValue(),
+    accessorFn: row => getWeaponTypeName(row.weaponType),
+    cell: info => !info.row.getIsGrouped() ? info.getValue() : (
+      <WeaponTypeContainer>
+        <WeaponTypeIcon weaponType={info.row.original.weaponType} />
+        <WeaponTypeLabel>{info.getValue()}</WeaponTypeLabel>
+      </WeaponTypeContainer>
+    ),
   },
   // {
   //   header: 'Upgrade',
@@ -38,6 +87,7 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
   // },
   {
     header: 'Phy. Dmg',
+    id: 'physicalDamageTypes',
     accessorFn: row => row.physicalDamageTypes.map(getPhysicalDamageTypeName).join('/'),
     cell: info => info.getValue(),
   },
@@ -47,7 +97,8 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
     columns: attributes.map(attr => ({
       header: attr.shortName,
       accessorFn: row => row.requiredAttributes[attr.key] || 0,
-      aggregationFn: () => 0,
+      aggregationFn: () => 1,
+      sortingFn: 'basic',
       cell: info => <NumberColumn>{info.getValue() || ''}</NumberColumn>,
     })),
   },
@@ -65,14 +116,23 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
   {
     header: 'Attack Power',
     id: 'attackPower',
-    columns: attackTypes.map(attackType => ({
-      id: `attackPower_${attackType.key}`,
-      header: getAttackTypeShortName(attackType.key),
-      accessorFn: row => row.attack[attackType.key] || undefined,
-      aggregationFn: () => 0,
-      cell: info => <NumberColumn>{info.getValue()}</NumberColumn>,
-      sortUndefined: 1,
-    })),
+    columns: [
+      ...attackTypes.map<ColumnDef<InfusedWeapon>>(attackType => ({
+        id: `attackPower_${attackType.key}`,
+        header: getAttackTypeShortName(attackType.key),
+        accessorFn: row => row.attack[attackType.key] || undefined,
+        aggregationFn: () => 1,
+        cell: info => <DamageColumn infusion={info.row.original.infusion} attackType={attackType.key}>{info.getValue()}</DamageColumn>,
+        sortUndefined: 1,
+      })),
+      {
+        id: `attackPower_total`,
+        header: 'Total',
+        accessorFn: row => Object.values(row.attack).reduce((acc, v) => acc + v),
+        aggregationFn: () => 1,
+        cell: info => <NumberColumn>{info.getValue()}</NumberColumn>,
+      },
+    ]
   },
   {
     header: 'Stat Scaling',
@@ -81,7 +141,7 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
       id: `statScaling_${attr.key}`,
       header: attr.shortName,
       accessorFn: row => row.scaling[attr.key] || undefined,
-      aggregationFn: () => 0,
+      aggregationFn: () => 1,
       cell: info => getScalingLetter(info.getValue()) || '',
       sortUndefined: 1,
     })),
@@ -93,7 +153,7 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
       id: `damageReduction_${attackType.key}`,
       header: getAttackTypeShortName(attackType.key),
       accessorFn: row => row.guard[attackType.key] || undefined,
-      aggregationFn: () => 0,
+      aggregationFn: () => 1,
       cell: info => <NumberColumn>{info.getValue()}</NumberColumn>,
       sortUndefined: 1,
     })),

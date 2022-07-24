@@ -11,7 +11,7 @@ import {
   WeaponArt,
   WeaponArtKey,
   WeaponCategory,
-  WeaponCategoryKey,
+  WeaponTypeKey,
 } from '../types';
 import weaponsRaw from './weapons.json';
 
@@ -60,7 +60,7 @@ export const attackTypeLookup: Record<AttackTypeKey, Omit<AttackType, 'key'>> = 
   holy: { name: 'Holy', shortName: 'Holy' },
 };
 
-export const weaponCategoryLookup: Record<WeaponCategoryKey, Omit<WeaponCategory, 'key'>> = {
+export const weaponTypeLookup: Record<WeaponTypeKey, Omit<WeaponCategory, 'key'>> = {
   dagger: { name: 'Dagger' },
   straightSword: { name: 'Straight Sword' },
   greatsword: { name: 'Greatsword' },
@@ -140,5 +140,5 @@ export const attributeLookup: Record<AttributeKey, Omit<Attribute, 'key'>> = {
 export const attackTypes: Array<AttackType> = makeDataList(attackTypeLookup);
 export const attributes: Array<Attribute> = makeDataList(attributeLookup);
 export const infusions: Array<Infusion> = makeDataList(infusionLookup);
-export const weaponCategories: Array<WeaponCategory> = makeDataList(weaponCategoryLookup);
+export const weaponTypes: Array<WeaponCategory> = makeDataList(weaponTypeLookup);
 export const weaponArts: Array<WeaponArt> = makeDataList(weaponArtLookup);
