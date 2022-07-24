@@ -36,7 +36,7 @@ const scrapeName: ScrapeFunction = $ => {
   return normalizeText($('#infobox h2').text());
 };
 
-const scrapeCategory: ScrapeFunction = $ => {
+const scrapeWeaponType: ScrapeFunction = $ => {
   return normalizeText($('#breadcrumbs-container > a:last').text());
 };
 
@@ -205,7 +205,7 @@ const scrapeWeaponData = async (url: string): Promise<ScrapedWeapon> => {
     return {
       name: scrapeName($root),
       wikiUrl: url,
-      category: scrapeCategory($root),
+      weaponType: scrapeWeaponType($root),
       physicalDamageTypes: scrapePhysicalDamageTypes($root),
       requiredAttributes: scrapeRequiredAttributes($root),
       weaponArt: scrapeWeaponArt($root),

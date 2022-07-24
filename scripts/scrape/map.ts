@@ -7,14 +7,14 @@ import {
   AttributeKey,
   PhysicalDamageTypeKey,
   Weapon,
-  WeaponCategoryKey,
+  WeaponTypeKey,
   WeaponInfusionStats,
 } from '../../src/types';
 import { invert } from '../../src/utils';
 
 const scalingMap = invert(SCALING_MAP) as unknown as Record<string, number>;
 
-const categoryKeyMap: Record<string, WeaponCategoryKey> = {
+const weaponTypeKeyMap: Record<string, WeaponTypeKey> = {
   'Dagger': 'dagger',
   'Daggers': 'dagger',
   'Straight Sword': 'straightSword',
@@ -162,7 +162,7 @@ const weaponFromScraped = (scraped: ScrapedWeapon): Weapon => {
     const infusionKeys = Object.keys(scraped.infusions);
     return {
       name: scraped.name,
-      category: categoryKeyMap[scraped.category],
+      weaponType: weaponTypeKeyMap[scraped.weaponType],
       wikiUrl: scraped.wikiUrl,
       physicalDamageTypes: scraped.physicalDamageTypes.map(type => physicalDamageTypeKeyMap[type]),
       upgradeType: maxUpgradeLevel > 10 ? 'standard' : 'somber',

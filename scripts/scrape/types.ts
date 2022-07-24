@@ -27,7 +27,7 @@ export type ScrapedWeaponStats = {
 
 export type ScrapedWeapon = {
   name: string;
-  category: string;
+  weaponType: string;
   wikiUrl: string;
   physicalDamageTypes: Array<string>;
   requiredAttributes: Record<string, string>;
