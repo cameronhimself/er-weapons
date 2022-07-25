@@ -223,7 +223,7 @@ export const useWeaponTable = () => {
     {
       id: 'infusion',
       value: infusions.reduce(
-        (acc, { key }) => ({ ...acc, [key]: key === 'standard' }),
+        (acc, { key }) => ({ ...acc, [key]: ['standard', 'keen'].includes(key) }),
         {} as InfusionFilters
       )
     },

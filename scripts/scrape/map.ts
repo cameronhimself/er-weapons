@@ -195,7 +195,7 @@ const weaponFromScraped = (scraped: ScrapedWeapon): Weapon => {
         ...(scraped.infusions.magic ? { magic: statsFromScraped(scraped.infusions.magic) } : {}),
         ...(scraped.infusions.cold ? { cold: statsFromScraped(scraped.infusions.cold) } : {}),
         ...(scraped.infusions.poison ? { poison: statsFromScraped(scraped.infusions.poison) } : {}),
-        ...(scraped.infusions.blood ? { poison: statsFromScraped(scraped.infusions.blood) } : {}),
+        ...(scraped.infusions.blood ? { blood: statsFromScraped(scraped.infusions.blood) } : {}),
         ...(scraped.infusions.occult ? { occult: statsFromScraped(scraped.infusions.occult) } : {}),
       }
     };

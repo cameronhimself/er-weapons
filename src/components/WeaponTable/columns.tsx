@@ -108,11 +108,6 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
       </WeaponTypeContainer>
     ),
   },
-  // {
-  //   header: 'Upgrade',
-  //   accessorFn: row => row.upgradeType === 'somber' ? 'Somber (+10)' : 'Standard (+25)',
-  //   cell: info => info.getValue(),
-  // },
   {
     header: 'Upgrade',
     id: 'upgradeType',
@@ -126,9 +121,17 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
     )
   },
   {
+    header: 'Wght',
+    id: 'weight',
+    accessorFn: row => row.weight,
+    aggregationFn: () => 1,
+    cell: info => info.getValue(),
+  },
+  {
     header: 'Phy. Dmg',
     id: 'physicalDamageTypes',
     accessorFn: row => row.physicalDamageTypes.map(getPhysicalDamageTypeName).join('/'),
+    aggregationFn: () => 1,
     cell: info => info.getValue(),
   },
   {

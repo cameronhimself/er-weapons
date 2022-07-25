@@ -4,7 +4,9 @@ import { Table } from '@tanstack/react-table';
 import { infusions, weaponTypes } from '../../data/';
 import { InfusionKey, WeaponTypeKey } from '../../types';
 import { InfusionFilters, WeaponTypeFilters } from '../WeaponTable';
-import { CheckBox as Checkbox, Collapsible } from 'grommet';
+import * as icons from '../icons';
+import { Box, CheckBox as Checkbox, Collapsible } from 'grommet';
+import useCollapse from 'react-collapsed'
 
 const StyledSidebar = styled.div`
   flex-shrink: 0;
@@ -12,25 +14,22 @@ const StyledSidebar = styled.div`
   position: sticky;
   top: 20px;
   align-self: flex-start;
-  min-width: 180px;
+  min-width: 200px;
+  overflow-y: auto;
+  max-height: calc(100vh - 40px);
 `;
 
-// const Checkbox: React.FC<CheckboxProps> = (props) => {
-//   return (
-//     <label>
-//       <input
-//         type="checkbox"
-//         checked={props.checked}
-//         onChange={props.onChange}
-//       />
-//       {' '}{props.label}
-//     </label>
-//   );
-// };
-
-const SectionHeading = styled.div`
-  font-size: 18px;
-  margin-bottom: 8px;
+const StyledSectionHeading = styled.div`
+  font-size: 16px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  vertical-align: middle;
+  :focus {
+    outline: none;
+  }
+  > svg {
+    vertical-align: middle;
+  }
 `;
 
 const StyledSection = styled.div`
@@ -44,22 +43,31 @@ const StyledSection = styled.div`
   }
 `;
 
+const SectionHeading: React.FC<{ onClick: () => void, children: React.ReactNode }> = props => {
+  return (
+    <StyledSectionHeading {...props} />
+  );
+};
+
 const Section: React.FC<{ heading: string, children?: React.ReactNode, isOpen?: boolean }> = props => {
   const { heading, children, isOpen: isOpenInitial = true } = props;
   const [isOpen, setIsOpen] = React.useState(isOpenInitial);
+  const { getCollapseProps, getToggleProps, isExpanded } = useCollapse({ isExpanded: isOpen });
   return (
     <StyledSection>
-      <SectionHeading onClick={() => setIsOpen(!isOpen)}>{heading}</SectionHeading>
-      <Collapsible open={isOpen}>
+      <SectionHeading {...getToggleProps()} onClick={() => setIsOpen(!isOpen)}>
+        {heading} <icons.CollapsibleOpen size="15px" style={{ transition: 'transform 0.3s', transform: isExpanded ? 'rotate(0)' : 'rotate(-90deg)' }}/>
+        </SectionHeading>
+      <div {...getCollapseProps()}>
         {children}
-      </Collapsible>
+      </div>
     </StyledSection>
   );
 };
 
 const ColumnVisibilityCheckbox: React.FC<{ table: Table<any>, column: string, label: string, disabled: boolean}> = (props) => {
   const { table, column, label, disabled } = props;
-  return (
+  return !disabled && (
     <Checkbox
       disabled={disabled}
       label={label}

@@ -258,9 +258,12 @@ const scrapeTablePage = async (url: string, whitelist?: Array<string>): Promise<
 }
 
 const run = async () => {
+  const whitelist = process.argv.slice(2);
+  console.log(process.argv);
+  console.log(whitelist);
   const promises = [
-    ...(await scrapeTablePage(WEAPON_INDEX_URL)),
-    ...(await scrapeTablePage(SHIELD_INDEX_URL)),
+    ...(await scrapeTablePage(WEAPON_INDEX_URL, whitelist)),
+    ...(await scrapeTablePage(SHIELD_INDEX_URL, whitelist)),
   ];
   try {
     const allScraped = await Promise.all(promises);
