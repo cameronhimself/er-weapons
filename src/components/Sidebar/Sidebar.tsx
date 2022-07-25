@@ -4,7 +4,7 @@ import { Table } from '@tanstack/react-table';
 import { infusions, weaponTypes } from '../../data/';
 import { InfusionKey, WeaponTypeKey } from '../../types';
 import { InfusionFilters, WeaponTypeFilters } from '../WeaponTable';
-import { CheckBoxGroup, CheckBox as Checkbox, Collapsible } from 'grommet';
+import { CheckBox as Checkbox, Collapsible } from 'grommet';
 
 const StyledSidebar = styled.div`
   flex-shrink: 0;
@@ -14,12 +14,6 @@ const StyledSidebar = styled.div`
   align-self: flex-start;
   min-width: 180px;
 `;
-
-type CheckboxProps = {
-  label: string;
-  checked?: boolean;
-  onChange?: React.ChangeEventHandler<HTMLInputElement>;
-};
 
 // const Checkbox: React.FC<CheckboxProps> = (props) => {
 //   return (

@@ -120,7 +120,7 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
     cell: info => (
       <Tip content={{ standard: 'Standard', somber: 'Somber'}[info.row.original.upgradeType]}>
         <Center>
-          <img style={{ width: '18px', height: '18px', display: 'inline-block', verticalAlign: 'middle', lineHeight: 0 }} src={getUpgradeTypeIcon(info.row.original.upgradeType)} />
+          <img style={{ width: '18px', height: '18px', display: 'inline-block', verticalAlign: 'middle', lineHeight: 0 }} alt="" src={getUpgradeTypeIcon(info.row.original.upgradeType)} />
         </Center>
       </Tip>
     )
