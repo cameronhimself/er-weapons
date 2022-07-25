@@ -5,7 +5,7 @@ import { infusions, weaponTypes } from '../../data/';
 import { InfusionKey, WeaponTypeKey } from '../../types';
 import { InfusionFilters, WeaponTypeFilters } from '../WeaponTable';
 import * as icons from '../icons';
-import { Box, CheckBox as Checkbox, Collapsible } from 'grommet';
+import { CheckBox as Checkbox } from 'grommet';
 import useCollapse from 'react-collapsed'
 
 const StyledSidebar = styled.div`
