@@ -177,6 +177,7 @@ export const Sidebar: React.FC<{ table: Table<any> }> = (props) => {
         <Section heading="Columns" isOpen={false}>
           {table.getAllColumns().map(col => (
             <ColumnVisibilityCheckbox
+              key={col.id}
               disabled={Boolean(table.getState().grouping.find(g => g === col.id))}
               table={table}
               column={col.id}

@@ -22,7 +22,15 @@ export type ScrapedWeaponStats = {
     lightning: string;
     holy: string;
   };
-  effects: {};
+  effects: {
+    bleed: string;
+    frost: string;
+    poison: string;
+    rot: string;
+    sleep: string;
+    madness: string;
+    death: string;
+  };
 };
 
 export type ScrapedWeapon = {

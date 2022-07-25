@@ -9,7 +9,8 @@ import { CACHE_DIR, SCRAPED_FILEPATH } from './constants';
 import { ScrapedWeapon } from './types';
 
 const ROOT_URL = 'https://eldenring.wiki.fextralife.com';
-const INDEX_URL = `${ROOT_URL}/Weapons+Comparison+Tables`;
+const WEAPON_INDEX_URL = `${ROOT_URL}/Weapons+Comparison+Tables`;
+const SHIELD_INDEX_URL = `${ROOT_URL}/Shields+Comparison+Tables`;
 
 type ScrapeFunction<TReturn = string> = ($: cheerio.CheerioAPI, weaponName?: string) => TReturn;
 
@@ -74,7 +75,7 @@ const scrapeCritical: ScrapeFunction = $ => {
   return match ? match.groups.critValue : '';
 };
 
-const mapInfusionTableData = (data: Array<Array<string>>) => {
+const mapInfusionTableData = (data: Array<Array<string>>, html: Array<Array<string>>) => {
   const columnIndices = {
     guardBoost: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Bst'),
     castingScaling: data.findIndex(([section, key]) => section.includes('Attack Power') && (key.includes('Sor Scaling') || key.includes('Inc Scaling'))),
@@ -99,10 +100,36 @@ const mapInfusionTableData = (data: Array<Array<string>>) => {
       lightning: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Lit'),
       holy: data.findIndex(([section, key]) => section.includes('Damage Reduction') && key === 'Hol'),
     },
+    effects: data.findIndex(([section, key]) => section.includes('Passive Effects') && key === 'Any'),
   };
 
   return data[0].slice(2).map((_, i) => {
     const rowIndex = i + 2;
+    const $effects = html[columnIndices.effects] ? cheerio.load(html[columnIndices.effects][rowIndex]) : null;
+
+    const effects: Record<string, string> = {
+      bleed: '',
+      frost: '',
+      poison: '',
+      scarlet: '',
+      sleep: '',
+      madness: '',
+      death: '',
+    };
+
+    if ($effects) {
+      $effects('a').each((_, a) => {
+        const text = normalizeText($(a).text()).replace(/\D/g, '');
+        if (a.attribs.href.match(/Hemorrhage/i)) effects.bleed = text;
+        if (a.attribs.href.match(/Frostbite/i)) effects.frost = text;
+        if (a.attribs.href.match(/Poison/i)) effects.poison = text;
+        if (a.attribs.href.match(/Scarlet/i)) effects.rot = text;
+        if (a.attribs.href.match(/Sleep/i)) effects.sleep = text;
+        if (a.attribs.href.match(/Madness/i)) effects.madness = text;
+        if (a.attribs.href.match(/Death/i)) effects.death = text;
+      });
+    }
+
     return {
       castingScaling: columnIndices.castingScaling === -1 ? null : data[columnIndices.castingScaling][rowIndex].split(' - '),
       guardBoost: data[columnIndices.guardBoost][rowIndex],
@@ -127,15 +154,7 @@ const mapInfusionTableData = (data: Array<Array<string>>) => {
         lightning: data[columnIndices.guard.lightning][rowIndex],
         holy: data[columnIndices.guard.holy][rowIndex],
       },
-      effects: {
-        bleed: '',
-        frost: '',
-        poison: '',
-        rot: '',
-        sleep: '',
-        madness: '',
-        death: '',
-      },
+      effects,
     };
   });
 };
@@ -169,9 +188,11 @@ const getTableDataByInfusion = ($: cheerio.CheerioAPI, infusion: string) => {
     cheerioTableparser($attackTable);
     // @ts-ignore
     const data = $attackTable('table').parsetable(true, true, true);
-    return data;
+    // @ts-ignore
+    const html = $attackTable('table').parsetable(true, true, false);
+    return { data, html };
   }
-  return null;
+  return { data: null, html: null };
 };
 
 const scrapeInfusions: ScrapeFunction<ScrapedWeapon['infusions']> = $ => {
@@ -191,8 +212,8 @@ const scrapeInfusions: ScrapeFunction<ScrapedWeapon['infusions']> = $ => {
     occult: getTableDataByInfusion($, 'Occult'),
   };
 
-  return Object.entries(tableDataList).reduce((acc: any, [infusion, data]: any) => {
-    return data ? { ...acc, [infusion]: mapInfusionTableData(data) } : acc;
+  return Object.entries(tableDataList).reduce((acc: any, [infusion, { data, html }]: any) => {
+    return data ? { ...acc, [infusion]: mapInfusionTableData(data, html) } : acc;
   }, {});
 };
 
@@ -219,25 +240,28 @@ const scrapeWeaponData = async (url: string): Promise<ScrapedWeapon> => {
   }
 };
 
-const run = async () => {
-  const indexPageHtml = await loadPageHtml(INDEX_URL);
+const scrapeTablePage = async (url: string, whitelist?: Array<string>): Promise<Array<Promise<ScrapedWeapon>>> => {
+  const indexPageHtml = await loadPageHtml(url);
   const $index = $(indexPageHtml);
   const promises: Array<Promise<ScrapedWeapon>> = [];
-  const whitelist: Array<string> = [];
-  const limit = 0;
   $index('.wiki_table tbody tr').each((_, tr) => {
     $(tr)('td:first a').each((_, a) => {
       const name = normalizeText($(a).text());
       const url = `${ROOT_URL}${a.attribs['href']}`;
-      if (limit && promises.length >= limit) {
-        return;
-      }
-      if (whitelist.length && !whitelist.includes(name)) {
+      if (whitelist && whitelist.length && !whitelist.includes(name)) {
         return;
       }
       promises.push(scrapeWeaponData(url));
     });
   });
+  return promises;
+}
+
+const run = async () => {
+  const promises = [
+    ...(await scrapeTablePage(WEAPON_INDEX_URL)),
+    ...(await scrapeTablePage(SHIELD_INDEX_URL)),
+  ];
   try {
     const allScraped = await Promise.all(promises);
     write.sync(SCRAPED_FILEPATH, JSON.stringify(allScraped, null, 2));

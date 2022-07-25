@@ -1,14 +1,18 @@
 import styled from 'styled-components';
 import { ColumnDef } from '@tanstack/react-table';
-import { attackTypes, attributes } from '../../data';
+import { Tip } from 'grommet';
+import { attackTypes, attributes, effects } from '../../data';
 import { weaponTypeIcons } from '../../images';
-import { AttackTypeKey, InfusedWeapon, InfusionKey, WeaponTypeKey } from '../../types';
+import { AttackTypeKey, EffectKey, InfusedWeapon, InfusionKey, WeaponTypeKey } from '../../types';
 import {
   getAttackTypeShortName,
-  getWeaponTypeName,
+  getEffectName,
+  getEffectIcon,
   getInfusionName,
   getPhysicalDamageTypeName,
   getScalingLetter,
+  getUpgradeTypeIcon,
+  getWeaponTypeName,
 } from '../../utils';
 import { NumberColumn, WeaponLink } from './components';
 
@@ -43,6 +47,30 @@ const WeaponTypeContainer = styled.span`
   height: 100%;
   align-items: center;
 `;
+
+const Center = styled.span`
+  display: block;
+  text-align: center;
+`;
+
+const Scaling = styled(Center)`
+  font-weight: bold;
+  font-size: 16px;
+`;
+
+const EffectIcon: React.FC<{ effect: EffectKey }> = props => {
+  const { effect } = props;
+  return (
+    <Tip content={getEffectName(effect)} dropProps={{ align: { bottom: 'top' } }}>
+      <img
+        style={{ border: '1px solid #666', width: '18px', height: '18px', marginTop: '4px' }}
+        key={effect}
+        alt={getEffectName(effect)}
+        src={getEffectIcon(effect)}
+      />
+    </Tip>
+  );
+};
 
 const DamageColumn = styled(NumberColumn)<{ attackType: AttackTypeKey, infusion: InfusionKey }>`
   color: ${({ attackType }) => ({
@@ -86,6 +114,18 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
   //   cell: info => info.getValue(),
   // },
   {
+    header: 'Upgrade',
+    id: 'upgradeType',
+    accessorFn: row => row.upgradeType,
+    cell: info => (
+      <Tip content={{ standard: 'Standard', somber: 'Somber'}[info.row.original.upgradeType]}>
+        <Center>
+          <img style={{ width: '18px', height: '18px', display: 'inline-block', verticalAlign: 'middle', lineHeight: 0 }} src={getUpgradeTypeIcon(info.row.original.upgradeType)} />
+        </Center>
+      </Tip>
+    )
+  },
+  {
     header: 'Phy. Dmg',
     id: 'physicalDamageTypes',
     accessorFn: row => row.physicalDamageTypes.map(getPhysicalDamageTypeName).join('/'),
@@ -96,6 +136,7 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
     id: 'requiredAttributes',
     columns: attributes.map(attr => ({
       header: attr.shortName,
+      id: `requiredAttributes_${attr.key}`,
       accessorFn: row => row.requiredAttributes[attr.key] || 0,
       aggregationFn: () => 1,
       sortingFn: 'basic',
@@ -112,6 +153,12 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
       return filterValue[value];
     },
     cell: info => info.getValue(),
+  },
+  {
+    header: 'Crit',
+    id: 'critical',
+    accessorFn: row => row.critical,
+    cell: info => <NumberColumn>{info.getValue()}</NumberColumn>,
   },
   {
     header: 'Attack Power',
@@ -142,7 +189,19 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
       header: attr.shortName,
       accessorFn: row => row.scaling[attr.key] || undefined,
       aggregationFn: () => 1,
-      cell: info => getScalingLetter(info.getValue()) || '',
+      cell: info => <Scaling>{getScalingLetter(info.getValue()) || ''}</Scaling>,
+      sortUndefined: 1,
+    })),
+  },
+  {
+    header: 'Effects',
+    id: 'effects',
+    columns: effects.map(effect => ({
+      id: `effect_${effect.key}`,
+      header: () => <EffectIcon effect={effect.key} />,
+      accessorFn: row => row.effects[effect.key] || undefined,
+      aggregationFn: () => 1,
+      cell: info => <NumberColumn>{info.getValue()}</NumberColumn>,
       sortUndefined: 1,
     })),
   },
@@ -157,5 +216,11 @@ export const columns: ColumnDef<InfusedWeapon>[] = [
       cell: info => <NumberColumn>{info.getValue()}</NumberColumn>,
       sortUndefined: 1,
     })),
+  },
+  {
+    header: 'Guard Boost',
+    id: 'guardBoost',
+    accessorFn: row => row.guardBoost,
+    cell: info => <NumberColumn>{info.getValue()}</NumberColumn>,
   },
 ];

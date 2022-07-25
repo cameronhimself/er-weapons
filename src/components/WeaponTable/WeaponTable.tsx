@@ -14,6 +14,7 @@ import {
   SortingState,
   Table,
   Row as RowType,
+  Cell as CellType,
 } from '@tanstack/react-table';
 import { icons as i } from '../../components';
 import {
@@ -22,9 +23,8 @@ import {
   weaponTypeLookup,
   weaponTypes,
 } from '../../data';
-import { fonts } from '../../style';
 import { InfusionKey, InfusedWeapon, WeaponTypeKey } from '../../types';
-import { infusionIcons, weaponTypeIcons } from '../../images';
+import { infusionIcons } from '../../images';
 import { columns as defaultColumns } from './columns';
 
 export type WeaponTypeFilters = Record<WeaponTypeKey, boolean>;
@@ -140,13 +140,37 @@ const HeadRow = styled.tr`
   background: #eee;
 `;
 
-const Cell = styled.td`
+const BasicCell = styled.td`
   padding: 3px 6px;
   white-space: nowrap;
   background: transparent;
   border-left: none;
   border-right: none;
 `;
+
+const cellComponentMap: Record<string, any> = {
+  requiredAttributes: styled(BasicCell)`
+    box-shadow: inset 0 0 0px 9999px rgba(128,200,128,0.05)
+  `,
+  attackPower: styled(BasicCell)`
+    box-shadow: inset 0 0 0px 9999px rgba(200,128,128,0.05)
+  `,
+  damageReduction: styled(BasicCell)`
+    box-shadow: inset 0 0 0px 9999px rgba(128,128,200,0.05)
+  `,
+  effect: styled(BasicCell)`
+    box-shadow: inset 0 0 0px 9999px rgba(200,200,128,0.05)
+  `,
+};
+
+
+const Cell: React.FC<React.HTMLProps<HTMLTableCellElement> & { cell: CellType<any, any>, children?: React.ReactNode }> = props => {
+  const { cell } = props;
+  const CellComponent = cell.getIsAggregated()
+    ? BasicCell
+    : cellComponentMap[cell.column.id.split('_')[0]] || BasicCell;
+  return <CellComponent {...props} />;
+}
 
 const HeadCell = styled.th<{ sortable: boolean }>`
   white-space: nowrap;
@@ -165,8 +189,8 @@ const SortIcon: React.FC<{ direction: SortDirection | false }> = (props) => {
     ? { asc: i.SortAscending, desc: i.SortDescending }[direction]
     : undefined;
   return (
-    <span style={{ width: '7px', display: 'inline-block' }}>
-      {Icon && <Icon size="0.95em" style={{ verticalAlign: 'middle' }} />}
+    <span style={{ width: '100%', height: '8px', display: 'flex', justifyContent: 'center' }}>
+      {Icon && <Icon size="0.95em" style={{ verticalAlign: 'middle', marginTop: '-3px' }} />}
     </span>
   );
 };
@@ -179,7 +203,12 @@ export const useWeaponTable = () => {
     return (indexA < indexB) ? -1 : (indexA > indexB) ? 1 : 0;
   }));
   const [columns] = React.useState<typeof defaultColumns>(defaultColumns);
-  const [columnVisibility, setColumnVisibility] = React.useState({})
+  const [columnVisibility, setColumnVisibility] = React.useState<Record<string, boolean>>({
+    guardBoost: false,
+    guard: false,
+    upgradeType: false,
+    physicalDamageTypes: false,
+  });
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [grouping, setGrouping] = React.useState<GroupingState>(['type', 'infusion']);
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -242,7 +271,7 @@ export const WeaponTable: React.FC<{ table: Table<InfusedWeapon> }> = (props) =>
                       header.column.columnDef.header,
                       header.getContext()
                     )}
-                    {header.column.getCanSort() && <SortIcon direction={header.column.getIsSorted()} />}
+                    <SortIcon direction={header.column.getIsSorted()} />
                   </div>
                 )}
               </HeadCell>
@@ -254,7 +283,7 @@ export const WeaponTable: React.FC<{ table: Table<InfusedWeapon> }> = (props) =>
         {table.getRowModel().rows.map((row, i) => (
           <Row key={row.id} index={i} row={row}>
             {row.getVisibleCells().map(cell => !cell.getIsPlaceholder() && (
-              <Cell key={cell.id} className={cell.id}>
+              <Cell key={cell.id} className={cell.column.id} cell={cell}>
                 {!cell.getIsAggregated() && !cell.getIsPlaceholder() && flexRender(
                   cell.column.columnDef.cell,
                   cell.getContext()

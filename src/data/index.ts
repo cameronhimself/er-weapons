@@ -3,6 +3,8 @@ import {
   AttackTypeKey,
   Attribute,
   AttributeKey,
+  Effect,
+  EffectKey,
   Infusion,
   InfusionKey,
   InfusedWeapon,
@@ -13,6 +15,7 @@ import {
   WeaponCategory,
   WeaponTypeKey,
 } from '../types';
+import { effectIcons } from '../images';
 import weaponsRaw from './weapons.json';
 
 export const weapons = weaponsRaw as Array<Weapon>;
@@ -92,6 +95,9 @@ export const weaponTypeLookup: Record<WeaponTypeKey, Omit<WeaponCategory, 'key'>
   glintstoneStaff: { name: 'Glintstone Staff' },
   sacredSeal: { name: 'Sacred Seal' },
   torch: { name: 'Torch' },
+  smallShield: { name: 'Small Shield' },
+  mediumShield: { name: 'Medium Shield' },
+  greatshield: { name: 'Greatshield' },
 };
 
 export const weaponArtLookup: Record<WeaponArtKey, Omit<WeaponArt, 'key'>> = {
@@ -137,8 +143,47 @@ export const attributeLookup: Record<AttributeKey, Omit<Attribute, 'key'>> = {
   },
 };
 
+export const effectLookup: Record<EffectKey, Omit<Effect, 'key'>> = {
+  bleed: {
+    name: 'Hemmorhage',
+    shortName: 'Bleed',
+    icon: effectIcons.bleed,
+  },
+  poison: {
+    name: 'Poison',
+    shortName: 'Poison',
+    icon: effectIcons.poison,
+  },
+  frost: {
+    name: 'Frostbite',
+    shortName: 'Frost',
+    icon: effectIcons.frost,
+  },
+  rot: {
+    name: 'Scarlet Rot',
+    shortName: 'Rot',
+    icon: effectIcons.rot,
+  },
+  sleep: {
+    name: 'Sleep',
+    shortName: 'Sleep',
+    icon: effectIcons.sleep,
+  },
+  madness: {
+    name: 'Madness',
+    shortName: 'Madness',
+    icon: effectIcons.madness,
+  },
+  // death: {
+  //   name: 'Death Blight',
+  //   shortName: 'Death',
+  //   icon: effectIcons.death,
+  // },
+};
+
 export const attackTypes: Array<AttackType> = makeDataList(attackTypeLookup);
 export const attributes: Array<Attribute> = makeDataList(attributeLookup);
+export const effects: Array<Effect> = makeDataList(effectLookup);
 export const infusions: Array<Infusion> = makeDataList(infusionLookup);
 export const weaponTypes: Array<WeaponCategory> = makeDataList(weaponTypeLookup);
 export const weaponArts: Array<WeaponArt> = makeDataList(weaponArtLookup);

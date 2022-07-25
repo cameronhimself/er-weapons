@@ -29,3 +29,6 @@ export { default as ballista } from './ballista.png';
 export { default as glintstoneStaff } from './glintstoneStaff.png';
 export { default as sacredSeal } from './sacredSeal.png';
 export { default as torch } from './torch.png';
+export { default as smallShield } from './smallShield.png';
+export { default as mediumShield } from './mediumShield.png';
+export { default as greatshield } from './greatshield.png';

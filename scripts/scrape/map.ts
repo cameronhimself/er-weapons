@@ -10,7 +10,7 @@ import {
   WeaponTypeKey,
   WeaponInfusionStats,
 } from '../../src/types';
-import { invert } from '../../src/utils';
+import { invert } from 'lodash';
 
 const scalingMap = invert(SCALING_MAP) as unknown as Record<string, number>;
 
@@ -80,21 +80,33 @@ const weaponTypeKeyMap: Record<string, WeaponTypeKey> = {
   'Key Items': 'torch', // the regular torch is categorized as a key item on the wiki for some reason
   'Torch': 'torch',
   'Torches': 'torch',
+  'Small Shield': 'smallShield',
+  'Small Shields': 'smallShield',
+  'Medium Shield': 'mediumShield',
+  'Medium Shields': 'mediumShield',
+  'Greatshield': 'greatshield',
+  'Greatshields': 'greatshield',
 };
 
 const physicalDamageTypeKeyMap: Record<string, PhysicalDamageTypeKey> = {
   Standard: 'standard',
   Strike: 'strike',
+  'Strike Damage': 'strike',
   Slash: 'slash',
   Pierce: 'pierce',
 };
 
 const attributeKeyMap: Record<string, AttributeKey> = {
-  Str: 'strength',
-  Dex: 'dexterity',
-  Int: 'intelligence',
-  Fai: 'faith',
-  Arc: 'arcane',
+  str: 'strength',
+  strength: 'strength',
+  dex: 'dexterity',
+  dexterity: 'dexterity',
+  int: 'intelligence',
+  intelligence: 'intelligence',
+  fai: 'faith',
+  faith: 'faith',
+  arc: 'arcane',
+  arcane: 'arcane',
 };
 
 const stringToNumber = (str: string): number => {
@@ -114,7 +126,7 @@ const scalingFromScraped = (scaling: string) => {
 
 const statsFromScraped = (scrapedStats: Array<ScrapedWeaponStats>): Array<WeaponInfusionStats> => {
   return scrapedStats.map((scrapedStats) => {
-    const { attack, guard, castingScaling, scaling } = scrapedStats;
+    const { attack, guard, castingScaling, scaling, effects } = scrapedStats;
     const stats: WeaponInfusionStats = {
       guardBoost: Number(scrapedStats.guardBoost),
       castingScaling: castingScaling
@@ -142,14 +154,12 @@ const statsFromScraped = (scrapedStats: Array<ScrapedWeaponStats>): Array<Weapon
         holy: stringToNumber(guard.holy),
       },
       effects: {
-        bleed: 0,
-        frost: 0,
-        poison: 0,
-        deadlyPoison: 0,
-        rot: 0,
-        sleep: 0,
-        madness: 0,
-        death: 0,
+        bleed: Number(effects.bleed),
+        frost: Number(effects.frost),
+        poison: Number(effects.poison),
+        rot: Number(effects.rot),
+        sleep: Number(effects.sleep),
+        madness: Number(effects.madness),
       },
     };
     return stats;
@@ -171,7 +181,7 @@ const weaponFromScraped = (scraped: ScrapedWeapon): Weapon => {
       weight: stringToNumber(scraped.weight),
       critical: stringToNumber(scraped.critical),
       requiredAttributes: Object.entries(scraped.requiredAttributes).reduce((acc, [key, value]) => {
-        return { ...acc, [attributeKeyMap[key]]: Number(value) };
+        return { ...acc, [attributeKeyMap[key.toLowerCase()]]: Number(value) };
       }, {} as Record<AttributeKey, number>),
       infusions: {
         standard: statsFromScraped(scraped.infusions.standard),

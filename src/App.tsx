@@ -36,6 +36,11 @@ const theme = {
   checkBox: {
     size: '16px',
   },
+  tip: {
+    content: {
+      background: 'black',
+    },
+  }
 };
 
 const App: React.FC = () => {
