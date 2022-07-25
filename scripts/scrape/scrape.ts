@@ -267,7 +267,7 @@ const run = async () => {
   ];
   try {
     const allScraped = await Promise.all(promises);
-    write.sync(SCRAPED_FILEPATH, JSON.stringify(allScraped, null, 2));
+    write.sync(SCRAPED_FILEPATH, JSON.stringify(allScraped));
   } catch (err) {
     console.error(err);
   }

@@ -208,7 +208,7 @@ const weaponFromScraped = (scraped: ScrapedWeapon): Weapon => {
 const run = () => {
   const scraped = loadJson();
   const weapons = scraped.map(weaponFromScraped);
-  write.sync(`${OUTPUT_DIR}/weapons.json`, JSON.stringify(weapons, null, 2));
+  write.sync(`${OUTPUT_DIR}/weapons.json`, JSON.stringify(weapons));
 };
 
 run();

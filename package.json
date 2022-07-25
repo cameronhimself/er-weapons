@@ -33,9 +33,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "scrape-only": "ts-node --project ./tsconfig.node.json scripts/scrape/scrape.ts",
-    "map-only": "ts-node --project ./tsconfig.node.json scripts/scrape/map.ts",
-    "scrape": "npm run scrape-only && npm run map-only"
+    "scrape-data": "ts-node --project ./tsconfig.node.json scripts/scrape/scrape.ts",
+    "map-data": "ts-node --project ./tsconfig.node.json scripts/scrape/map.ts",
+    "transform-data": "ts-node --project ./tsconfig.node.json scripts/scrape/transform.ts",
+    "scrape": "npm run scrape-data && npm run map-data && npm run transform-data"
   },
   "eslintConfig": {
     "extends": [

@@ -8,7 +8,6 @@ import {
   Infusion,
   InfusionKey,
   InfusedWeapon,
-  UpgradeLevel,
   Weapon,
   WeaponArt,
   WeaponArtKey,
@@ -17,36 +16,10 @@ import {
 } from '../types';
 import { effectIcons } from '../images';
 import weaponsRaw from './weapons.json';
+import infusedWeaponsRaw from './infusedWeapons.json';
 
 export const weapons = weaponsRaw as Array<Weapon>;
-
-export const infusedWeapons: Array<InfusedWeapon> = weapons.reduce((acc, weapon) => {
-  const { infusions, ...baseStats } = weapon;
-
-  Object.entries(infusions).forEach(([k, infusion]) => {
-    const infusionKey = k as InfusionKey;
-    // const infusionMinLevel = 0;
-    // const infusionMinStats = infusion[infusionMinLevel];
-    const infusionMaxLevel = infusion.length - 1;
-    const infusionMaxStats = infusion[infusionMaxLevel];
-
-    // acc.push({
-    //   ...baseStats,
-    //   ...infusionMinStats,
-    //   infusion: infusionKey,
-    //   level: infusionMinLevel as UpgradeLevel,
-    // });
-
-    acc.push({
-      ...baseStats,
-      ...infusionMaxStats,
-      infusion: infusionKey,
-      level: infusionMaxLevel as UpgradeLevel,
-    });
-  });
-
-  return acc;
-}, [] as Array<InfusedWeapon>);
+export const infusedWeapons = infusedWeaponsRaw as Array<InfusedWeapon>;
 
 const makeDataList = <TValues, TKey extends string>(lookup: Record<TKey, TValues>) => {
   return Object.entries(lookup).map(([key, data]) => ({
